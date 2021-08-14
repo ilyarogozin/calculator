@@ -1,106 +1,82 @@
-'''Модуль для подсчёта денег, либо калорий.'''
 import datetime as dt
 
 
 class Calculator:
-    '''Родительский класс для калькуляторов.'''
+    WEEK = dt.timedelta(days=7)
 
     def __init__(self, limit):
-        '''Конструктор родительского класс Calculator.'''
         self.limit = limit
         self.records = []
 
     def add_record(self, Record):
-        '''Метод используется для добавления записей в список.'''
         self.records.append(Record)
 
     def get_today_stats(self):
-        '''Метод используется для подсчёта сегодняшней статистики.'''
-        today = dt.datetime.now().date()
-        today_stats = 0
-        for record in self.records:
-            if record.date == today:
-                today_stats += record.amount
-            else:
-                continue
-        return today_stats
+        today = dt.date.today()
+        return sum(record.amount for record in self.records if
+                   record.date == today)
 
     def get_week_stats(self):
-        '''Метод используется для подсчёта статистики за последние 7 дней.'''
-        week = dt.timedelta(days=7)
-        today = dt.datetime.now().date()
-        one_week_ago = today - week
-        week_stats = 0
-        for record in self.records:
-            if record.date <= today and record.date >= one_week_ago:
-                week_stats += record.amount
-            else:
-                continue
-        return week_stats
+        today = dt.date.today()
+        one_week_ago = today - self.WEEK
+        return sum(record.amount for record in self.records if
+                   record.date <= today and record.date > one_week_ago)
 
 
 class CaloriesCalculator(Calculator):
-    '''Дочерний класс CaloriesCalculator используется для подсчёта калорий.'''
+    PHRASE_ABOUT_REMAIN = ('Сегодня можно съесть что-нибудь ещё, но с общей'
+                           ' калорийностью не более {calories_left} кКал')
+    PHRASE_ABOUT_EXCESS = 'Хватит есть!'
 
     def get_calories_remained(self):
-        '''Метод используется для подсчёта калорий,
-        которые можно получить сегодня.
-        '''
-        if self.get_today_stats() < self.limit:
-            calories_left = self.limit - self.get_today_stats()
-            return ('Сегодня можно съесть что-нибудь ещё, но с общей '
-                    f'калорийностью не более {calories_left} кКал')
-        else:
-            return 'Хватит есть!'
+        today_stats = self.get_today_stats()
+
+        if today_stats < self.limit:
+            left = self.limit - today_stats
+            return self.PHRASE_ABOUT_REMAIN.format(calories_left=left)
+        elif today_stats >= self.limit:
+            return self.PHRASE_ABOUT_EXCESS
 
 
 class CashCalculator(Calculator):
-    '''Дочерний класс CashCalculator используется для подсчёта денег.'''
-
-    USD_RATE = 73.20
-    EURO_RATE = 86.37
+    USD_RATE = 60.0
+    EURO_RATE = 70.0
+    PHRASE_ABOUT_REMAIN = 'На сегодня осталось {money} {currency}'
+    PHRASE_NO_MONEY = 'Денег нет, держись'
+    PHRASE_ABOUT_DEBT = ('Денег нет, держись: твой долг'
+                         ' - {money} {currency}')
+    CURRENCY_DICT = {'usd': ['USD', 1 / USD_RATE],
+                     'eur': ['Euro', 1 / EURO_RATE],
+                     'rub': ['руб', 1]
+                     }
 
     def get_today_cash_remained(self, currency):
-        '''Метод используется для подсчёта денег,
-        которые можно потратить сегодня.
-        '''
-        if self.get_today_stats() < self.limit:
-            money_left = self.limit - self.get_today_stats()
-            if currency == 'usd':
-                currency = 'USD'
-                money = format(money_left / self.USD_RATE, '.2f')
-            elif currency == 'eur':
-                currency = 'Euro'
-                money = format(money_left / self.EURO_RATE, '.2f')
-            elif currency == 'rub':
-                currency = 'руб'
-                money = money_left
-            return f'На сегодня осталось {money} {currency}'
-        elif self.get_today_stats() == self.limit:
-            return 'Денег нет, держись'
-        else:
-            money_over = self.get_today_stats() - self.limit
-            if currency == 'usd':
-                currency = 'USD'
-                money = format(money_over / self.USD_RATE, '.2f')
-            elif currency == 'eur':
-                currency = 'Euro'
-                money = format(money_over / self.EURO_RATE, '.2f')
-            elif currency == 'rub':
-                currency = 'руб'
-                money = money_over
-            return f'Денег нет, держись: твой долг - {money} {currency}'
+        today_stats = self.get_today_stats()
+        currency_text = self.CURRENCY_DICT[currency][0]
+        ratio_rub_to_currency = self.CURRENCY_DICT[currency][1]
+
+        if today_stats < self.limit:
+            money_left = round((self.limit - today_stats)
+                               * ratio_rub_to_currency, 2)
+            return self.PHRASE_ABOUT_REMAIN.format(money=money_left,
+                                                   currency=currency_text)
+        elif today_stats == self.limit:
+            return self.PHRASE_NO_MONEY
+        elif today_stats > self.limit:
+            money_over = round((today_stats - self.limit)
+                               * ratio_rub_to_currency, 2)
+            return self.PHRASE_ABOUT_DEBT.format(money=money_over,
+                                                 currency=currency_text)
 
 
 class Record:
-    '''Родительский класс для хранения событий.'''
+    DATE_FORMAT = '%d.%m.%Y'
 
     def __init__(self, amount, comment,
                  date=None):
-        '''Конструктор родительского класса Record.'''
         self.amount = amount
         self.comment = comment
         if date is None:
-            self.date = dt.datetime.now().date()
+            self.date = dt.date.today()
         else:
-            self.date = dt.datetime.strptime(date, '%d.%m.%Y').date()
+            self.date = dt.datetime.strptime(date, self.DATE_FORMAT).date()
