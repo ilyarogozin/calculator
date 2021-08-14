@@ -45,6 +45,7 @@ class CashCalculator(Calculator):
     PHRASE_NO_MONEY = 'Денег нет, держись'
     PHRASE_ABOUT_DEBT = ('Денег нет, держись: твой долг'
                          ' - {money} {currency}')
+    WRONG_CURRENCY = 'Неправильно введённая валюта. Ожидается: usd, eur, rub.'
     CURRENCY_DICT = {'usd': ['USD', 1 / USD_RATE],
                      'eur': ['Euro', 1 / EURO_RATE],
                      'rub': ['руб', 1]
@@ -54,6 +55,9 @@ class CashCalculator(Calculator):
         today_stats = self.get_today_stats()
         currency_text = self.CURRENCY_DICT[currency][0]
         ratio_rub_to_currency = self.CURRENCY_DICT[currency][1]
+
+        if currency not in self.CURRENCY_DICT.keys():
+            return self.WRONG_CURRENCY
 
         if today_stats < self.limit:
             money_left = round((self.limit - today_stats)
