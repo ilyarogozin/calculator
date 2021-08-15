@@ -2,7 +2,7 @@ import datetime as dt
 
 
 class Calculator:
-    PERIOD_FROM_TODAY_TO_WEEK_AGO = dt.timedelta(days=7)
+    WEEK_AGO_FROM_YESTERDAY = dt.timedelta(days=7)
 
     def __init__(self, limit):
         self.limit = limit
@@ -19,10 +19,10 @@ class Calculator:
 
     def get_week_stats(self):
         today = dt.date.today()
-        one_week_ago = today - self.PERIOD_FROM_TODAY_TO_WEEK_AGO
+        week_ago = today - self.WEEK_AGO_FROM_YESTERDAY
         return sum(record.amount
                    for record in self.records
-                   if record.date <= today and one_week_ago < record.date)
+                   if week_ago < record.date <= today)
 
 
 class CaloriesCalculator(Calculator):
@@ -35,39 +35,34 @@ class CaloriesCalculator(Calculator):
         if today_stats < self.limit:
             left = self.limit - today_stats
             return self.REMAIN.format(calories_left=left)
-        else:
-            return self.EXCESS
+        return self.EXCESS
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 1 / 60.0
-    EURO_RATE = 1 / 70.0
+    USD_RATE = 60.0
+    EURO_RATE = 70.0
     REMAIN = 'На сегодня осталось {money} {currency}'
     NO_MONEY = 'Денег нет, держись'
     DEBT = ('Денег нет, держись: твой долг'
             ' - {money} {currency}')
-    UNEXPECTED_CURRENCY = 'Неправильно введённая валюта.'
-    CURRENCY = {'usd': ['USD', USD_RATE],
-                'eur': ['Euro', EURO_RATE],
-                'rub': ['руб', 1]
-                }
+    UNEXPECTED_CURRENCY = 'Неправильно переданное значение аргумента "валюта".'
+    CURRENCIES = {'usd': ['USD', USD_RATE],
+                  'eur': ['Euro', EURO_RATE],
+                  'rub': ['руб', 1]
+                  }
 
     def get_today_cash_remained(self, currency):
-        if currency not in self.CURRENCY:
+        if currency not in self.CURRENCIES:
             raise ValueError(self.UNEXPECTED_CURRENCY)
         today_stats = self.get_today_stats()
-        currency_name, rate_rub_to_currency = self.CURRENCY[currency]
-        money_difference = 0
-        if today_stats < self.limit:
-            money_difference = self.limit - today_stats
-            phrase = self.REMAIN
-        elif today_stats == self.limit:
-            phrase = self.NO_MONEY
-        else:
-            money_difference = today_stats - self.limit
-            phrase = self.DEBT
-        format_money = round(money_difference * rate_rub_to_currency, 2)
-        return phrase.format(money=format_money, currency=currency_name)
+        name, rate = self.CURRENCIES[currency]
+        money_difference = self.limit - today_stats
+        format_money = round(money_difference / rate, 2)
+        if money_difference > 0:
+            return self.REMAIN.format(money=format_money, currency=name)
+        elif money_difference < 0:
+            return self.DEBT.format(money=abs(format_money), currency=name)
+        return self.NO_MONEY.format(money=format_money, currency=name)
 
 
 class Record:
