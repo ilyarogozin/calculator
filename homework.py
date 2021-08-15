@@ -2,7 +2,7 @@ import datetime as dt
 
 
 class Calculator:
-    WEEK_AGO_FROM_YESTERDAY = dt.timedelta(days=7)
+    WEEK_AGO = dt.timedelta(days=7)
 
     def __init__(self, limit):
         self.limit = limit
@@ -19,7 +19,7 @@ class Calculator:
 
     def get_week_stats(self):
         today = dt.date.today()
-        week_ago = today - self.WEEK_AGO_FROM_YESTERDAY
+        week_ago = today - self.WEEK_AGO
         return sum(record.amount
                    for record in self.records
                    if week_ago < record.date <= today)
@@ -45,15 +45,18 @@ class CashCalculator(Calculator):
     NO_MONEY = 'Денег нет, держись'
     DEBT = ('Денег нет, держись: твой долг'
             ' - {money} {currency}')
-    UNEXPECTED_CURRENCY = 'Неправильно переданное значение аргумента "валюта".'
+    UNEXPECTED_CURRENCY = 'Неожиданная валюта.'
     CURRENCIES = {'usd': ['USD', USD_RATE],
                   'eur': ['Euro', EURO_RATE],
                   'rub': ['руб', 1]
                   }
 
     def get_today_cash_remained(self, currency):
-        if currency not in self.CURRENCIES:
-            raise ValueError(self.UNEXPECTED_CURRENCY)
+        try:
+            if currency not in self.CURRENCIES:
+                raise ValueError(self.UNEXPECTED_CURRENCY)
+        except ValueError:
+            print('Неожиданное значение аргумента "currency"')
         today_stats = self.get_today_stats()
         name, rate = self.CURRENCIES[currency]
         money_difference = self.limit - today_stats
@@ -62,7 +65,7 @@ class CashCalculator(Calculator):
             return self.REMAIN.format(money=format_money, currency=name)
         elif money_difference < 0:
             return self.DEBT.format(money=abs(format_money), currency=name)
-        return self.NO_MONEY.format(money=format_money, currency=name)
+        return self.NO_MONEY
 
 
 class Record:
