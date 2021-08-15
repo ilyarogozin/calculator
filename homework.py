@@ -55,8 +55,7 @@ class CashCalculator(Calculator):
         if currency not in self.CURRENCIES:
             raise ValueError(
                 self.UNEXPECTED_CURRENCY.format(unexpected_currency=currency))
-        today_stats = self.get_today_stats()
-        money_difference = self.limit - today_stats
+        money_difference = self.limit - self.get_today_stats()
         if money_difference == 0:
             return self.NO_MONEY
         name, rate = self.CURRENCIES[currency]
