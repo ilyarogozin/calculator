@@ -45,27 +45,26 @@ class CashCalculator(Calculator):
     NO_MONEY = 'Денег нет, держись'
     DEBT = ('Денег нет, держись: твой долг'
             ' - {money} {currency}')
-    UNEXPECTED_CURRENCY = 'Неожиданная валюта.'
+    UNEXPECTED_CURRENCY = 'Неожиданная валюта: {unexpected_currency}'
     CURRENCIES = {'usd': ['USD', USD_RATE],
                   'eur': ['Euro', EURO_RATE],
                   'rub': ['руб', 1]
                   }
 
     def get_today_cash_remained(self, currency):
-        try:
-            if currency not in self.CURRENCIES:
-                raise ValueError(self.UNEXPECTED_CURRENCY)
-        except ValueError:
-            print('Неожиданное значение аргумента "currency"')
+        if currency not in self.CURRENCIES:
+            raise ValueError(
+                self.UNEXPECTED_CURRENCY.format(unexpected_currency=currency))
         today_stats = self.get_today_stats()
-        name, rate = self.CURRENCIES[currency]
         money_difference = self.limit - today_stats
+        if money_difference == 0:
+            return self.NO_MONEY
+        name, rate = self.CURRENCIES[currency]
         format_money = round(money_difference / rate, 2)
         if money_difference > 0:
             return self.REMAIN.format(money=format_money, currency=name)
         elif money_difference < 0:
             return self.DEBT.format(money=abs(format_money), currency=name)
-        return self.NO_MONEY
 
 
 class Record:
