@@ -2,6 +2,7 @@ import datetime as dt
 
 
 class Calculator:
+
     WEEK_AGO = dt.timedelta(days=7)
 
     def __init__(self, limit):
@@ -26,6 +27,7 @@ class Calculator:
 
 
 class CaloriesCalculator(Calculator):
+
     REMAIN = ('Сегодня можно съесть что-нибудь ещё, но с общей'
               ' калорийностью не более {calories_left} кКал')
     EXCESS = 'Хватит есть!'
@@ -39,6 +41,7 @@ class CaloriesCalculator(Calculator):
 
 
 class CashCalculator(Calculator):
+
     USD_RATE = 60.0
     EURO_RATE = 70.0
     REMAIN = 'На сегодня осталось {money} {currency}'
@@ -66,6 +69,7 @@ class CashCalculator(Calculator):
 
 
 class Record:
+
     DATE_FORMAT = '%d.%m.%Y'
 
     def __init__(self, amount, comment,
