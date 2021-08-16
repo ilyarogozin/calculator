@@ -62,8 +62,7 @@ class CashCalculator(Calculator):
         format_money = round(money_difference / rate, 2)
         if money_difference > 0:
             return self.REMAIN.format(money=format_money, currency=name)
-        elif money_difference < 0:
-            return self.DEBT.format(money=abs(format_money), currency=name)
+        return self.DEBT.format(money=abs(format_money), currency=name)
 
 
 class Record:
