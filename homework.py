@@ -8,8 +8,8 @@ class Calculator:
         self.limit = limit
         self.records = []
 
-    def add_record(self, Record):
-        self.records.append(Record)
+    def add_record(self, record):
+        self.records.append(record)
 
     def get_today_stats(self):
         today = dt.date.today()
