@@ -10,5 +10,6 @@ py==1.10.0
 pycodestyle==2.7.0
 pyflakes==2.3.1
 pyparsing==2.4.7
+pytest==6.2.4
 toml==0.10.2
 typing-extensions==3.10.0.0
