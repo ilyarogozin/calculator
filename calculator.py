@@ -80,3 +80,17 @@ class Record:
             self.date = dt.date.today()
         else:
             self.date = dt.datetime.strptime(date, self.DATE_FORMAT).date()
+
+
+if __name__ == '__main__':
+    def test():
+        calories = CaloriesCalculator(1500)
+        cash = CashCalculator(3000)
+        rec1 = Record(200, 'Макароны с картошкой')
+        rec2 = Record(40, 'На хлеб')
+        calories.add_record(rec1)
+        cash.add_record(rec2)
+        print(calories.get_calories_remained())
+        print(cash.get_today_cash_remained('rub'))
+
+    test()
