@@ -1,5 +1,5 @@
 # CALORIE AND MONEY CALCULATOR
-## calculator - это учебный модуль подсчёта калорий и денег
+## calculator - это модуль подсчёта калорий и денег
 ### Авторы:
 - Ilya Rogozin https://github.com/ilyarogozin
 ### Технологии:
