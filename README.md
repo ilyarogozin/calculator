@@ -3,7 +3,7 @@
 ### Авторы:
 - Ilya Rogozin https://github.com/ilyarogozin
 ### Технологии:
-- Python
+- Python 3
 
 # Как запустить модуль с тестовыми данными:
 - Клонируйте репозиторий:
